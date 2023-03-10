@@ -1,15 +1,26 @@
 import React from "react";
 import { AppUI } from "./AppUI";
 
-const defaultTodos = [
-  { text: "Cortar cebolla", completed: true },
-  { text: "Tomar el cursso de intro a React", completed: true },
-  { text: "Llorar con la llorona", completed: false },
-  { text: "Dormir", completed: false },
-];
+// const defaultTodos = [
+//   { text: "Cortar cebolla", completed: true },
+//   { text: "Tomar el cursso de intro a React", completed: true },
+//   { text: "Llorar con la llorona", completed: false },
+//   { text: "Dormir", completed: false },
+// ];
 
 function App() {
-  const [todos, setTodos] = React.useState(defaultTodos); // se crea un estado guardago en la variable todos, con el set se puede actualizar la funcion
+  const localStorageTodos = localStorage.getItem("TODOS_V1");
+  let parsedTodos;
+
+  if (!localStorageTodos) {
+    //(!) revisa si no hay nada en localSrorageTodos
+    localStorage.setItem("TODOS_V1", JSON.stringify([]));
+    parsedTodos = [];
+  } else {
+    parsedTodos = JSON.parse(localStorageTodos);
+  }
+
+  const [todos, setTodos] = React.useState(parsedTodos); // se crea un estado guardago en la variable todos, con el set se puede actualizar la funcion
   const [searchValue, setSearchValue] = React.useState("");
 
   const completedTodos = todos.filter((todo) => !!todo.completed).length; //filtrar si cada todo tiene la propiedad todo.completed como true
@@ -29,6 +40,12 @@ function App() {
     });
   }
 
+  const saveTodos = (newTodos) => {
+    const stringfiedTodos = JSON.stringify(newTodos);
+    localStorage.setItem("TODOS_V1", stringfiedTodos);
+    setTodos(newTodos);
+  };
+
   const completeTodo = (text) => {
     const todoIndex = todos.findIndex((todo) => todo.text === text); // por cada todo analizado ver si es igual a text (se recibe en la funcion)
     const newTodos = [...todos]; //crea nueva lista de todos
@@ -37,7 +54,7 @@ function App() {
       completed: true, //marcar el todo que cumple con lo anterior con la propiedad true
     };
     //todos[todoIndex].completed = true; (forma corta de lo anterior)
-    setTodos(newTodos); //actualiza el estado para reenderizar
+    saveTodos(newTodos); //actualiza el estado para reenderizar
   };
 
   const deleteTodo = (text) => {
@@ -46,7 +63,7 @@ function App() {
     {
       newTodos.splice(todoIndex, 1); //este metodo agarra la funcion o posicion y elimina la cantidad que se le diga
     }
-    setTodos(newTodos);
+    saveTodos(newTodos);
   };
 
   return (
@@ -56,8 +73,8 @@ function App() {
       searchValue={searchValue}
       setSearchValue={setSearchValue}
       searchedTodos={searchedTodos}
-      completeTodo = {completeTodo}
-      deleteTodo = {deleteTodo}
+      completeTodo={completeTodo}
+      deleteTodo={deleteTodo}
     />
   );
 }
