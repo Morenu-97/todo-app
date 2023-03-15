@@ -8,19 +8,36 @@ import { AppUI } from "./AppUI";
 //   { text: "Dormir", completed: false },
 // ];
 
-function App() {
-  const localStorageTodos = localStorage.getItem("TODOS_V1");
-  let parsedTodos;
+// Recibimos como parámetros el nombre y el estado inicial de nuestro item:
+function useLocalStorage(itemName, initialValue) {
+  // Guardamos nuestro item en una constante
+  const localStorageItem = localStorage.getItem(itemName);
+  let parsedItem;
 
-  if (!localStorageTodos) {
-    //(!) revisa si no hay nada en localSrorageTodos
-    localStorage.setItem("TODOS_V1", JSON.stringify([]));
-    parsedTodos = [];
+  //(!) revisa si no hay nada en localSrorageItem:
+  if (!localStorageItem) {
+    //si no hay nada, setea itemName con initialValue (arreglo vacio linea 37)
+    localStorage.setItem(itemName, JSON.stringify(initialValue));
+    //pardedItem = []
+    parsedItem = initialValue;
   } else {
-    parsedTodos = JSON.parse(localStorageTodos);
+    parsedItem = JSON.parse(localStorageItem);
   }
 
-  const [todos, setTodos] = React.useState(parsedTodos); // se crea un estado guardago en la variable todos, con el set se puede actualizar la funcion
+  const [item, setItem] = React.useState(parsedItem); // se crea un estado guardago en la variable item, con el set se puede actualizar la funcion
+
+  const saveItem = (newItem) => {
+    const stringfiedItem = JSON.stringify(newItem);
+    localStorage.setItem(itemName, stringfiedItem);
+    //modifica el estado (newItem(linea 59 o 70)Todos completados o eliminados):
+    setItem(newItem);
+  };
+  return [item, saveItem];
+}
+
+function App() {
+  const [todos, saveTodos] = useLocalStorage("TODOS_V1", []);
+
   const [searchValue, setSearchValue] = React.useState("");
 
   const completedTodos = todos.filter((todo) => !!todo.completed).length; //filtrar si cada todo tiene la propiedad todo.completed como true
@@ -39,12 +56,6 @@ function App() {
       return todoText.includes(searchText); // se filtra cual de los todos incluye el texto escrito en el input de busqueda
     });
   }
-
-  const saveTodos = (newTodos) => {
-    const stringfiedTodos = JSON.stringify(newTodos);
-    localStorage.setItem("TODOS_V1", stringfiedTodos);
-    setTodos(newTodos);
-  };
 
   const completeTodo = (text) => {
     const todoIndex = todos.findIndex((todo) => todo.text === text); // por cada todo analizado ver si es igual a text (se recibe en la funcion)
@@ -65,6 +76,11 @@ function App() {
     }
     saveTodos(newTodos);
   };
+
+  // hook para ejecutar el codigo que este por dentro justo antes de reenderizar el componente
+  // React.useEffect(() =>  {
+
+  // }, [])
 
   return (
     <AppUI
