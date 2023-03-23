@@ -10,33 +10,56 @@ import { AppUI } from "./AppUI";
 
 // Recibimos como parámetros el nombre y el estado inicial de nuestro item:
 function useLocalStorage(itemName, initialValue) {
-  // Guardamos nuestro item en una constante
-  const localStorageItem = localStorage.getItem(itemName);
-  let parsedItem;
+  const [error, setError] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [item, setItem] = React.useState(initialValue); // se crea un estado guardago en la variable item, con el set se puede actualizar la funcion
 
-  //(!) revisa si no hay nada en localSrorageItem:
-  if (!localStorageItem) {
-    //si no hay nada, setea itemName con initialValue (arreglo vacio linea 37)
-    localStorage.setItem(itemName, JSON.stringify(initialValue));
-    //pardedItem = []
-    parsedItem = initialValue;
-  } else {
-    parsedItem = JSON.parse(localStorageItem);
-  }
+  React.useEffect(() => {
+    setTimeout(() => {
+      try {
+        // Guardamos nuestro item en una constante
+        const localStorageItem = localStorage.getItem(itemName);
+        let parsedItem;
 
-  const [item, setItem] = React.useState(parsedItem); // se crea un estado guardago en la variable item, con el set se puede actualizar la funcion
+        //(!) revisa si no hay nada en localSrorageItem:
+        if (!localStorageItem) {
+          //si no hay nada, setea itemName con initialValue (arreglo vacio)
+          localStorage.setItem(itemName, JSON.stringify(initialValue));
+          //pardedItem = []
+          parsedItem = initialValue;
+        } else {
+          parsedItem = JSON.parse(localStorageItem);
+        }
+
+        setItem(parsedItem);
+        setLoading(false);
+      } catch (error) {
+        setError(error);
+      }
+    }, 1000);
+  });
 
   const saveItem = (newItem) => {
-    const stringfiedItem = JSON.stringify(newItem);
-    localStorage.setItem(itemName, stringfiedItem);
-    //modifica el estado (newItem(linea 59 o 70)Todos completados o eliminados):
-    setItem(newItem);
+    try {
+      const stringfiedItem = JSON.stringify(newItem);
+      localStorage.setItem(itemName, stringfiedItem);
+      //modifica el estado (newItem(linea 59 o 70)Todos completados o eliminados):
+      setItem(newItem);
+    } catch (error) {
+      setError(error);
+    }
   };
-  return [item, saveItem];
+  return { item, saveItem, loading, error };
 }
 
 function App() {
-  const [todos, saveTodos] = useLocalStorage("TODOS_V1", []);
+  //todos es lo que hay en 'TODOS_V1'
+  const {
+    item: todos,
+    saveItem: saveTodos,
+    loading,
+    error,
+  } = useLocalStorage("TODOS_V1", []);
 
   const [searchValue, setSearchValue] = React.useState("");
 
@@ -77,13 +100,10 @@ function App() {
     saveTodos(newTodos);
   };
 
-  // hook para ejecutar el codigo que este por dentro justo antes de reenderizar el componente
-  // React.useEffect(() =>  {
-
-  // }, [])
-
   return (
     <AppUI
+      loading={loading}
+      error={error}
       totalTodos={totalTodos}
       completedTodos={completedTodos}
       searchValue={searchValue}
