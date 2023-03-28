@@ -14,6 +14,8 @@ function TodoProvider(props) {
 
   const [searchValue, setSearchValue] = React.useState("");
 
+  const [openModal, setOpenModal] = React.useState(false);
+
   const completedTodos = todos.filter((todo) => !!todo.completed).length; //filtrar si cada todo tiene la propiedad todo.completed como true
   const totalTodos = todos.length;
 
@@ -30,6 +32,15 @@ function TodoProvider(props) {
       return todoText.includes(searchText); // se filtra cual de los todos incluye el texto escrito en el input de busqueda
     });
   }
+
+  const addTodo = (text) => {
+    const newTodos = [...todos];
+    newTodos.push({
+      completed: false,
+      text,
+    });
+    saveTodos(newTodos);
+  };
 
   const completeTodo = (text) => {
     const todoIndex = todos.findIndex((todo) => todo.text === text); // por cada todo analizado ver si es igual a text (se recibe en la funcion)
@@ -61,8 +72,11 @@ function TodoProvider(props) {
         searchValue,
         setSearchValue,
         searchedTodos,
+        addTodo,
         completeTodo,
         deleteTodo,
+        openModal,
+        setOpenModal,
       }}
     >
       {props.children}
