@@ -35,7 +35,6 @@ function useLocalStorage(itemName, initialValue) {
     try {
       const stringfiedItem = JSON.stringify(newItem);
       localStorage.setItem(itemName, stringfiedItem);
-      //modifica el estado (newItem(linea 59 o 70)Todos completados o eliminados):
       setItem(newItem);
     } catch (error) {
       setError(error);
